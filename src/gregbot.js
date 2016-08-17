@@ -74,7 +74,7 @@ const getQueueResponseHash = function( queueResponse )
 
 const pingUrls = function( queueUrls )
 {
-	if( queueUrls.length === 0 )
+	if( queueUrls.length === 0 || queueUrls.shift === "undefined" )
 		return;
 
 	const thisQueue = queueUrls.shift();
