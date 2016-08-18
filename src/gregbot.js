@@ -24,7 +24,7 @@ gregBot.on('start', function()
 
 	setInterval( function()
 	{
-		pingUrls( pingUrls );
+		pingUrls( queueUrls );
 
 	}, checkInterval );
 });
@@ -45,23 +45,24 @@ const checkQueues = function( queueResponse )
 		return;
 
 	const thisQueueResponse = queueResponse.shift();
+	const queueResponseHash = getQueueResponseHash( thisQueueResponse );
 
 	if( thisQueueResponse.messages > warningThreshold )
 	{
-		if( typeof sentWarnings[ getQueueResponseHash( thisQueueResponse ) ] === "undefined" || !sentWarnings[ getQueueResponseHash( thisQueueResponse ) ] )
+		if( typeof sentWarnings[ queueResponseHash ] === "undefined" || !sentWarnings[ queueResponseHash ] )
 		{
 			gregBot.postMessageToChannel(channel, generateQueueWarningMessage( thisQueueResponse ), params);
-			sentWarnings[ getQueueResponseHash( thisQueueResponse ) ] = true;
+			sentWarnings[ queueResponseHash ] = true;
 		}
 	}
 	else
 	{
-		if( typeof sentWarnings[ getQueueResponseHash( thisQueueResponse ) ] !== "undefined" || sentWarnings[ getQueueResponseHash( thisQueueResponse ) ] )
+		if( typeof sentWarnings[ queueResponseHash ] !== "undefined" && sentWarnings[ queueResponseHash ] )
 		{
 			gregBot.postMessageToChannel(channel, generateQueueOkMessage( thisQueueResponse ), params);
 		}
 
-		sentWarnings[ thisQueueResponse.name + ' - ' + thisQueueResponse.node ] = false;
+		sentWarnings[ queueResponseHash ] = false;
 	}
 
 	checkQueues( queueResponse );
@@ -74,7 +75,7 @@ const getQueueResponseHash = function( queueResponse )
 
 const pingUrls = function( queueUrls )
 {
-	if( queueUrls.length === 0 || queueUrls.shift === "undefined" )
+	if( queueUrls.length === 0 )
 		return;
 
 	const thisQueue = queueUrls.shift();
