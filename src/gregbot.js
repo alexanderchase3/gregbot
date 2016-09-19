@@ -11,13 +11,11 @@ const checkInterval = 1000 * 10;
 const warningThreshold = 1500;
 const channel = 'gregbottest';
 
+//Bot specific values
 var botToken = botTokens.live;
 var botID = 'U227YR75M';
 var botName = 'greg-bot';
-var params = 
-{
-	icon_emoji: ':tropical_fish:'
-};
+var iconemoji = ':tropical_fish:';
 	
 //if dev use paul-bot else use 
 if(process.argv[2] === 'paul')
@@ -25,11 +23,13 @@ if(process.argv[2] === 'paul')
 	botToken = botTokens.dev;
 	botID = 'U2DA8FA4C';
 	botName = 'paul-bot';
-	params = 
-	{
-		icon_emoji: ':beers:'
-	};
+	iconemoji = ':beers:';
 }
+
+const params = 
+{
+	icon_emoji: iconemoji
+};
 
 var gregBot = new SlackBot({
     token: botToken, 
@@ -38,20 +38,13 @@ var gregBot = new SlackBot({
 
 gregBot.on('start', function() 
 {	
-	//MOVE THIS FOR LOOP TO pingURLs itself
-	for(var key in queueUrls)
-	{
-		pingUrls( queueUrls[key] );
-	}
+	pingUrls( queueUrls );
 	
 	messageEvent.start();
 	
 	setInterval( function()
 	{
-		for(var key in queueUrls)
-		{
-			pingUrls( queueUrls[key] );
-		}
+		pingUrls( queueUrls );
 	}, checkInterval );
 });
 
@@ -130,15 +123,18 @@ const getQueueResponseHash = function( queueResponse )
 	return queueResponse.name + ' - ' + queueResponse.node;
 };
 
-const pingUrls = function( queueUrl )
+const pingUrls = function( queueUrls )
 {
-	request(queueUrl , function (error, response, body) 
+	for(var key in queueUrls)
 	{
-		if ( error || response.statusCode !== 200 ) 
-			return;
-
-		checkQueues( JSON.parse( body ) );
-	});
+		request(queueUrls[key] , function (error, response, body) 
+		{
+			if ( error || response.statusCode !== 200 ) 
+				return;
+	
+			checkQueues( JSON.parse( body ) );
+		});
+	}
 };
 
 /**
