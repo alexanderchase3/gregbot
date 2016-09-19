@@ -3,21 +3,36 @@ const request = require('request');
 
 const queueUrls = require( '../auth/rabbit-urls.js' );
 const messageEvent = require( '../src/message-event.js' );
+const botTokens = require( '../auth/slack-token.js' );
 
 var sentWarnings = {};
 var sentQuotes = {};
 const checkInterval = 1000 * 10;
 const warningThreshold = 1500;
 const channel = 'gregbottest';
-const botID = 'U227YR75M';
-const botName = 'gregbot';
-const params = 
+
+var botToken = botTokens.live;
+var botID = 'U227YR75M';
+var botName = 'greg-bot';
+var params = 
 {
 	icon_emoji: ':tropical_fish:'
 };
+	
+//if dev use paul-bot else use 
+if(process.argv[2] === 'paul')
+{
+	botToken = botTokens.dev;
+	botID = 'U2DA8FA4C';
+	botName = 'paul-bot';
+	params = 
+	{
+		icon_emoji: ':beers:'
+	};
+}
 
 var gregBot = new SlackBot({
-    token: require( '../auth/slack-token.js' ), 
+    token: botToken, 
     name: botName
 });
 
