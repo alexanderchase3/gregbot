@@ -7,7 +7,7 @@ const messageEvent = require( '../src/message-event.js' );
 var sentWarnings = {};
 var sentQuotes = {};
 const checkInterval = 1000 * 10;
-const warningThreshold = 5000;
+const warningThreshold = 10;
 const channel = 'gregbottest';
 const botID = 'U227YR75M';
 const botName = 'gregbot';
@@ -23,14 +23,21 @@ var gregBot = new SlackBot({
 
 gregBot.on('start', function() 
 {	
-	pingUrls( queueUrls );
+	//MOVE THIS FOR LOOP TO pingURLs itself
+	for(var key in queueUrls)
+	{
+		pingUrls( queueUrls[key] );
+	}
 	
 	messageEvent.start();
 	
 	setInterval( function()
 	{
-		pingUrls( queueUrls );
-	}, 	checkInterval );
+		for(var key in queueUrls)
+		{
+			pingUrls( queueUrls[key] );
+		}
+	}, checkInterval );
 });
 
 
@@ -79,6 +86,7 @@ const checkQueues = function( queueResponse )
 		return;
 
 	const thisQueueResponse = queueResponse.shift();
+	
 	const queueResponseHash = getQueueResponseHash( thisQueueResponse );
 
 	if( thisQueueResponse.messages > warningThreshold )
@@ -107,22 +115,15 @@ const getQueueResponseHash = function( queueResponse )
 	return queueResponse.name + ' - ' + queueResponse.node;
 };
 
-const pingUrls = function( queueUrls )
+const pingUrls = function( queueUrl )
 {
-	if( queueUrls.length === 0 )
-		return;
-
-	const thisQueue = queueUrls.shift();
-
-	request(thisQueue , function (error, response, body) 
+	request(queueUrl , function (error, response, body) 
 	{
 		if ( error || response.statusCode !== 200 ) 
 			return;
 
 		checkQueues( JSON.parse( body ) );
 	});
-
-	pingUrls( queueUrls );
 };
 
 /**
