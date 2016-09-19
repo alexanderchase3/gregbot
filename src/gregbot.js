@@ -9,7 +9,7 @@ var sentWarnings = {};
 var sentQuotes = {};
 const checkInterval = 1000 * 10;
 const warningThreshold = 1500;
-const channel = 'gregbottest';
+const channel = 'developer-chat';
 
 //Bot specific values
 var botToken = botTokens.live;
