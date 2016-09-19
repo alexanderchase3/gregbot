@@ -1,97 +1,78 @@
 const SlackBot = require('slackbots');
 const request = require('request');
-const wondergirl = require('wondergirl');
-
-var gregBot = new SlackBot({
-    token: require( '../auth/slack-token.js' ), // Add a bot https://my.slack.com/services/new/bot and put the token  
-    name: 'gregbot'
-});
 
 const queueUrls = require( '../auth/rabbit-urls.js' );
+const messageEvent = require( '../src/message-event.js' );
 
 var sentWarnings = {};
 var sentQuotes = {};
 const checkInterval = 1000 * 10;
-const warningThreshold = 5000;
+const warningThreshold = 10;
 const channel = 'gregbottest';
-
+const botID = 'U227YR75M';
+const botName = 'gregbot';
 const params = 
 {
 	icon_emoji: ':tropical_fish:'
 };
 
+var gregBot = new SlackBot({
+    token: require( '../auth/slack-token.js' ), 
+    name: botName
+});
+
 gregBot.on('start', function() 
 {	
-	pingUrls( queueUrls );
-	
-	var people = {
-		"0": {
-	    	"name": "Alex",
-	    	"handle": "alex"
-	    }
-	    /*,
-	    "1" : {
-	    	"name": "James",
-	    	"handle": "jamesfrost"
-	    },
-	    "2": {
-	    	"name": "Jim",
-	    	"handle": "jim"
-	    }
-	    */
-	};
-	
-	for (var key in people) {
-		var thismessage = "Oi " + people[key]['name'] + ", check out my cat lad! https://media.giphy.com/media/SRO0ZwmImic0/giphy.gif :us: :tropical_fish:";
-		//gregBot.postMessageToUser( people[key]['handle'], thismessage, params);
+	//MOVE THIS FOR LOOP TO pingURLs itself
+	for(var key in queueUrls)
+	{
+		pingUrls( queueUrls[key] );
 	}
+	
+	messageEvent.start();
 	
 	setInterval( function()
 	{
-		pingUrls( queueUrls );
+		for(var key in queueUrls)
+		{
+			pingUrls( queueUrls[key] );
+		}
 	}, checkInterval );
 });
 
 
 gregBot.on('message', function(data)
 {
-	//EVENTS: MESSAGE TO GREGBOT
-	if(data['type'] === 'message' && data['subtype'] !== 'bot_message')
-	{
-		//If contains the substring 'quote' or 'inspire'
-		if(data['text'].includes('quote') || data['text'].includes('inspire'))
-		{
-			postedBy = getChannelOrUserNameFromID(data['channel'], data['user']);
-			setTimeout(function(){ postQuote(postedBy); }, 2000);
-		}
+	var type = data['type'];
+	var subtype = data['subtype'];
+	var channel_id = data['channel'];
+	var user_id = data['user'];
+	var text = data['text'];
 		
-		//Tell gregbot he isn't a lad - if you dare!
-		if(data['text'].includes('you are not a lad'))
-		{
-			postedBy = getChannelOrUserNameFromID(data['channel'], data['user']);
-			message = 'Do not question me human, I am king of the lads. :crown: :us:';
-			
-			setTimeout(function(){ postMessage(postedBy, message); }, 2000);
-		}
-	}
+	var postedBy = getChannelOrUserNameFromID(channel_id, user_id);
 	
-	//EVENTS: SOMEONE TYPING TO GREGBOT
-	if(data['type'] === 'user_typing')
+	//EVENTS: MESSAGE TO GREGBOT
+	if(type === 'message' && subtype !== 'bot_message')
 	{
-		//If a user is typing to gregbot, there's a 100/1 chance of some encouragement...
-		postedBy = getChannelOrUserNameFromID(data['channel'], data['user']);
-		message = "I see you typing lad, what do you need?! :tropical_fish:";
-		
-		number = Math.round(Math.random() * 100);
+		//Build regex to find someone mentioning gregbot
+		var mentionSyntax = '<@' + botID + '(\\|' + botName.replace('.', '\\.') + ')?>';
+        var mention = new RegExp(mentionSyntax, 'i');
 
-		if(number === 33)
-			setTimeout(function(){ postMessage(postedBy, message); }, 1000);
+        //Only reply if mentioned
+        if(text.match(mention))
+        {
+	        var response = messageEvent.parseMessage(data);
+	        
+	        //Seems more human to have a slightly delayed response
+			setTimeout(function(){ postMessage(postedBy, response); }, 1000);
+        }
+        
 	}
 });
 
 const generateQueueWarningMessage = function( queueResponse )
 {
-	return 'oi lads, ' + queueResponse.name + ' - ' + queueResponse.node + ' has ' + queueResponse.messages + ' messages :tropical_fish:'
+	return ':bangbang: OI LADS, *' + queueResponse.name + ' - ' + queueResponse.node + '* has ' + queueResponse.messages + ' messages :tropical_fish:'
 };
 
 const generateQueueOkMessage = function( queueResponse )
@@ -105,6 +86,7 @@ const checkQueues = function( queueResponse )
 		return;
 
 	const thisQueueResponse = queueResponse.shift();
+	
 	const queueResponseHash = getQueueResponseHash( thisQueueResponse );
 
 	if( thisQueueResponse.messages > warningThreshold )
@@ -133,45 +115,15 @@ const getQueueResponseHash = function( queueResponse )
 	return queueResponse.name + ' - ' + queueResponse.node;
 };
 
-const pingUrls = function( queueUrls )
+const pingUrls = function( queueUrl )
 {
-	if( queueUrls.length === 0 )
-		return;
-
-	const thisQueue = queueUrls.shift();
-
-	request(thisQueue , function (error, response, body) 
+	request(queueUrl , function (error, response, body) 
 	{
 		if ( error || response.statusCode !== 200 ) 
 			return;
 
 		checkQueues( JSON.parse( body ) );
 	});
-
-	pingUrls( queueUrls );
-};
-
-/**
- * Post an inspirational quote
- * @param {object} replyTo
- */
-const postQuote = function(replyTo)
-{
-	var quote = wondergirl.getQuote();
-	
-	var type = replyTo['type'];
-	var name = replyTo['name'];
-
-	if(type === 'channel')
-	{
-		gregBot.postMessageToChannel( name, "Bear with me lad, finding the perfect quote... :tropical_fish:", params);
-		setTimeout(function(){ gregBot.postMessageToChannel( name, quote, params ); }, 3500);
-	}
-	else if(type === 'user')
-	{
-		gregBot.postMessageToUser( name, "Bear with me lad, finding the perfect quote... :tropical_fish:", params);
-		setTimeout(function(){ gregBot.postMessageToUser( name, quote, params ); }, 3500);
-	}
 };
 
 /**
@@ -189,7 +141,6 @@ const postMessage = function(replyTo, message)
 	else if(type === 'user')
 		gregBot.postMessageToUser( name, message, params );
 };
-
 
 /**
  * Check if message is posted to user or channel
@@ -237,7 +188,7 @@ const getChannelName = function(channel_id)
 };
 
 /**
- * Get user name from is
+ * Get user name from id
  * @param {string} user_id
  * @returns {object}
  */
