@@ -102,7 +102,7 @@ const checkQueues = function( queueResponse )
 	{
 		if( typeof sentWarnings[ queueResponseHash ] === "undefined" || !sentWarnings[ queueResponseHash ] )
 		{
-			//gregBot.postMessageToChannel(channel, generateQueueWarningMessage( thisQueueResponse ), params);
+			gregBot.postMessageToChannel(channel, generateQueueWarningMessage( thisQueueResponse ), params);
 			sentWarnings[ queueResponseHash ] = true;
 		}
 	}
@@ -110,7 +110,7 @@ const checkQueues = function( queueResponse )
 	{
 		if( typeof sentWarnings[ queueResponseHash ] !== "undefined" && sentWarnings[ queueResponseHash ] )
 		{
-			//gregBot.postMessageToChannel(channel, generateQueueOkMessage( thisQueueResponse ), params);
+			gregBot.postMessageToChannel(channel, generateQueueOkMessage( thisQueueResponse ), params);
 		}
 
 		sentWarnings[ queueResponseHash ] = false;
