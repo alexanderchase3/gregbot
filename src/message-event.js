@@ -1,5 +1,6 @@
 const substringSearch = require('./substring-search.js');
 const queueUrls = require( '../auth/rabbit-urls.js' );
+const twitterAPI = require('./twitter-api.js');
 
 exports.start = function() 
 {
@@ -30,11 +31,15 @@ exports.parseMessage = function(messageData)
 		//response = "Going already, @alex? Bye!" 
 		response = 'Going already, <@' + user_id + '>? Bye!';
 	}
-	
 	//IF ASKED QUEUE STATUS
-	if(receivedText.indexOf('queue status') >= 0)
+	else if(receivedText.indexOf('queue status') >= 0)
 	{
 		response = 'Gonna check the queues lad.'
+	}
+	else if(receivedText.indexOf('tweet') >= 0)
+	{
+		twitterAPI.generateTweet(messageData['text']);
+		response = "I've tweeted that for you! :tropical_fish:"
 	}
 	
 	return response;

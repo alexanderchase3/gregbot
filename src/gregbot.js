@@ -9,9 +9,9 @@ var sentWarnings = {};
 var sentQuotes = {};
 const checkInterval = 1000 * 10;
 const warningThreshold = 1500;
-const channel = 'developer-chat';
 
 //Bot specific values
+var channel = 'developer-chat';
 var botToken = botTokens.live;
 var botID = 'U227YR75M';
 var botName = 'greg-bot';
@@ -20,6 +20,7 @@ var iconemoji = ':tropical_fish:';
 //if dev use paul-bot else use 
 if(process.argv[2] === 'paul')
 {
+	channel = 'gregbottest';
 	botToken = botTokens.dev;
 	botID = 'U2DA8FA4C';
 	botName = 'paul-bot';
@@ -101,7 +102,7 @@ const checkQueues = function( queueResponse )
 	{
 		if( typeof sentWarnings[ queueResponseHash ] === "undefined" || !sentWarnings[ queueResponseHash ] )
 		{
-			gregBot.postMessageToChannel(channel, generateQueueWarningMessage( thisQueueResponse ), params);
+			//gregBot.postMessageToChannel(channel, generateQueueWarningMessage( thisQueueResponse ), params);
 			sentWarnings[ queueResponseHash ] = true;
 		}
 	}
@@ -109,7 +110,7 @@ const checkQueues = function( queueResponse )
 	{
 		if( typeof sentWarnings[ queueResponseHash ] !== "undefined" && sentWarnings[ queueResponseHash ] )
 		{
-			gregBot.postMessageToChannel(channel, generateQueueOkMessage( thisQueueResponse ), params);
+			//gregBot.postMessageToChannel(channel, generateQueueOkMessage( thisQueueResponse ), params);
 		}
 
 		sentWarnings[ queueResponseHash ] = false;
