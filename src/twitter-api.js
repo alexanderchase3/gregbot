@@ -11,29 +11,25 @@ const client = new Twitter({
 var postLink = "";
 
 //@TODO: Change from tweet between pipe. Slack changes normal quotes to open and close so caused problems.
-exports.generateTweet = function(tweetText) 
+exports.generateTweet = function(tweetText, callback) 
 {	
 	var tweet = tweetText.substring(tweetText.indexOf("|") + 1, tweetText.lastIndexOf("|"));
 	
-	postTweet(tweet);	
+	postTweet(tweet, callback);	
 }
 
-const postTweet = function(tweetText)
+const postTweet = function(tweetText, callback)
 {	
 	var tweetRequest = client.post('statuses/update', {status: tweetText},  function(error, tweet, response) {
 		//@TODO: Add error check and response for  { code: 187, message: 'Status is a duplicate.' }
-		if(error) console.log(error);
+		if(error) 
+		{
+			callback( error, undefined );
+			return;
+		}
 		
 		var tweetObject = JSON.parse(JSON.stringify(tweet));
-		
-		var username = tweetObject['user']['screen_name'];
-		var tweet_id = tweetObject['id_str'];
-		
-		//@TODO: return a link to the post for gregbot to link the user direct
-		//var postLink = "https://twitter.com/" + username + "/status/" + tweet_id;
 
-		//return postLink;
-	});
-	
-	//return tweetRequest;
+		callback( undefined, tweetObject );
+	});	
 }

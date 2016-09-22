@@ -61,7 +61,7 @@ gregBot.on('message', function(data)
 	var postedBy = getChannelOrUserNameFromID(channel_id, user_id);
 	
 	//EVENTS: MESSAGE TO GREGBOT
-	if(type === 'message' && subtype !== 'bot_message')
+	if(type === 'message' && subtype !== 'bot_message' && text !== undefined)
 	{
 		//Build regex to find someone mentioning gregbot
 		var mentionSyntax = '<@' + botID + '(\\|' + botName.replace('.', '\\.') + ')?>';
@@ -70,10 +70,13 @@ gregBot.on('message', function(data)
         //Only reply if mentioned
         if(text.match(mention))
         {
-	        var response = messageEvent.parseMessage(data);
+	        messageEvent.parseMessage(data, function( response )
+        	{
+		        //Seems more human to have a slightly delayed response
+				// setTimeout(function(){ postMessage(postedBy, response); }, 1000);
+				postMessage(postedBy, response);
+        	});
 	        
-	        //Seems more human to have a slightly delayed response
-			setTimeout(function(){ postMessage(postedBy, response); }, 1000);
         }
         
 	}

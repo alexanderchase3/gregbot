@@ -7,7 +7,7 @@ exports.start = function()
 	console.log("Hey lads, I'm awake!");
 }
 
-exports.parseMessage = function(messageData) 
+exports.parseMessage = function(messageData, callback) 
 {
 	var response = "";
 	
@@ -22,27 +22,34 @@ exports.parseMessage = function(messageData)
 	{
 		var timeAndDay = getTimeandDay();
 		
-		//response = "Hello, @alex! What a glorious Sunday evening!" 
-		response = 'Hello, <@' + user_id + '>! What a glorious ' + timeAndDay['day'] + " " + timeAndDay['period'] + "!";
+		callback('Hello, <@' + user_id + '>! What a glorious ' + timeAndDay['day'] + " " + timeAndDay['period'] + "!");
 	}
 	//IF A FAREWELL
 	else if(farewell.some(function(v) { return receivedText.indexOf(v) >= 0; })) 
 	{		
-		//response = "Going already, @alex? Bye!" 
-		response = 'Going already, <@' + user_id + '>? Bye!';
+		callback('Going already, <@' + user_id + '>? Bye!');
 	}
 	//IF ASKED QUEUE STATUS
 	else if(receivedText.indexOf('queue status') >= 0)
 	{
-		response = 'Gonna check the queues lad.'
+		callback('Gonna check the queues lad.');
 	}
 	else if(receivedText.indexOf('tweet') >= 0)
 	{
-		twitterAPI.generateTweet(messageData['text']);
-		response = "I've tweeted that for you! :tropical_fish:"
+		twitterAPI.generateTweet(messageData['text'], function(error, tweetObject)
+		{
+			if( error || typeof tweetObject.errors !== "undefined" )
+			{
+				callback( ':scream_cat: Something went wrong!' );
+				return;
+			}
+
+			var username = tweetObject['user']['screen_name'];
+			var tweet_id = tweetObject['id_str'];
+
+			callback("https://twitter.com/" + username + "/status/" + tweet_id);
+		});
 	}
-	
-	return response;
 }
 
 const getTimeandDay = function()
