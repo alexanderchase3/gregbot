@@ -21,7 +21,7 @@ exports.generateTweet = function(tweetText, callback)
 const postTweet = function(tweetText, callback)
 {	
 	var tweetRequest = client.post('statuses/update', {status: tweetText},  function(error, tweet, response) {
-		//@TODO: Add error check and response for  { code: 187, message: 'Status is a duplicate.' }
+		
 		if(error) 
 		{
 			callback( error, undefined );

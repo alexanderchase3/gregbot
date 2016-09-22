@@ -40,7 +40,12 @@ exports.parseMessage = function(messageData, callback)
 		{
 			if( error || typeof tweetObject.errors !== "undefined" )
 			{
-				callback( ':scream_cat: Something went wrong!' );
+				//If duplicate tweet
+				if(error[0]['code'] === 187)
+					callback( "You've already tweeted that! :hushed:" );
+				else
+					callback( ':scream_cat: Something went wrong!' );
+					
 				return;
 			}
 
