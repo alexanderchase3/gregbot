@@ -1,11 +1,13 @@
 const Twitter = require('twitter');
 
+const twitterAuth = require( '../auth/twitter-auth.js' );
+
 // @TODO: Move these into a separate file
 const client = new Twitter({
-  consumer_key: 'q1tMmBW5ILXRMbkdShHsG6OSw',
-  consumer_secret: 'lsj7cmQK9jVtLgIlA2TFg3EBbs9sQrlobk7QOfdC1jfeT6kS9B',
-  access_token_key: '761130436231823360-uRb4p4frsDwiiXyheocAXUVWw7LPlxd',
-  access_token_secret: 'a04T741ndqV7DLSlYlIWcpY8k2ibtSEHM5D8G84EHLplC'
+  consumer_key: twitterAuth.consumer_key,
+  consumer_secret: twitterAuth.consumer_secret,
+  access_token_key: twitterAuth.access_token_key,
+  access_token_secret: twitterAuth.access_token_secret
 });
 
 var postLink = "";
